@@ -1,39 +1,40 @@
 import { test, expect } from "@playwright/test";
-import { RoleListPage } from "../helpers/role-list.page";
+import { UserListPage } from "../helpers/user-list.page";
 import { Helper } from "../helpers/utils.helper";
+import { API } from "../config/env";
 
 const placeholderFilter = "Tìm kiếm"; // Expected placeholder text in search input
 const placeholderRoleType = "loại vai trò"; // Expected placeholder text in role type dropdown
 const searchText = {
-  code: "test-",
-  name: "Test ",
+  upi: "testuser",
+  email: "minh.lh1999@gmail.com",
+  name: "Test User",
 };
 const notFoundText = "xxxx"; // Example text for not found search
 const sqlInjectionText = "' OR 1=1 --"; // Example SQL injection text
-const editURL = "role/edit"; // Expected URL pattern when clicking edit
+const editURL = "user/edit"; // Expected URL pattern when clicking edit
 const loadTimeThreshold = 3000; // Load time threshold in milliseconds
 
 const errorMsg = 'Trường này là bắt buộc'; // Expected error message
-const validRoleID = `ROLE${Date.now()}`; // Example valid role name
-const validRoleName = `Test ${validRoleID}`; // Example valid role name
 
 test.describe("ROLE LIST (AUTHENTICATED)", () => {
   test.describe("ROLE LIST", () => {
     test.beforeEach(async ({ page }) => {
-      const role = new RoleListPage(page);
+      const role = new UserListPage(page);
       await role.goto();
     });
 
     test("Check placeholder text at filter", async ({ page }) => {
-      const role = new RoleListPage(page);
+      const role = new UserListPage(page);
       await role.checkPlaceholderText(role.searchInput, placeholderFilter);
     });
 
     test("Search by keyword", async ({ page }) => {
-      const role = new RoleListPage(page);
+      const role = new UserListPage(page);
       for (const key in searchText) {
         await role.search(searchText[key as keyof typeof searchText]);
         const rows = role.tableRows;
+        await expect(rows).not.toHaveCount(0);
         const count = await rows.count();
         console.log(
           `Found ${count} rows for search text: ${searchText[key as keyof typeof searchText]}`,
@@ -47,20 +48,20 @@ test.describe("ROLE LIST (AUTHENTICATED)", () => {
     });
 
     test("limit search text length", async ({ page }) => {
-      const role = new RoleListPage(page);
+      const role = new UserListPage(page);
       await role.goto();
       await Helper.verifyTextLength(role.searchInput, 250);
     });
 
     test("Search not found", async ({ page }) => {
-      const role = new RoleListPage(page);
+      const role = new UserListPage(page);
       await role.search(notFoundText);
 
       await expect(role.tableRows).toHaveCount(0);
     });
 
     test("Clear filter by search box", async ({ page }) => {
-      const role = new RoleListPage(page);
+      const role = new UserListPage(page);
       await role.search(notFoundText);
       await role.clearFilter();
 
@@ -68,34 +69,34 @@ test.describe("ROLE LIST (AUTHENTICATED)", () => {
     });
 
     test("Click edit role", async ({ page }) => {
-      const role = new RoleListPage(page);
+      const role = new UserListPage(page);
       await role.clickEditFirst();
       await expect(page).toHaveURL(new RegExp(editURL));
     });
 
     test("SQL Injection search", async ({ page }) => {
-      const role = new RoleListPage(page);
+      const role = new UserListPage(page);
 
       await role.search(sqlInjectionText);
 
-      await expect(role.tableRows).not.toHaveCount(9999);
+      await expect(role.tableRows).toHaveCount(0);
     });
 
     test("Pagination next", async ({ page }) => {
-      const role = new RoleListPage(page);
+      const role = new UserListPage(page);
       await role.nextPageBtn.click();
 
       await expect(page).toHaveURL(/page=2/);
     });
 
     test("Pagination previous", async ({ page }) => {
-      const role = new RoleListPage(page);
+      const role = new UserListPage(page);
       await role.nextPageBtn.click();
       await role.prevPageBtn.click();
     });
 
     test("Change page size", async ({ page }) => {
-      const role = new RoleListPage(page);
+      const role = new UserListPage(page);
       await role.pageSizeDropdown.click();
       const options = role.pageSizeOption;
       const optionCount = await options.count();
@@ -111,7 +112,7 @@ test.describe("ROLE LIST (AUTHENTICATED)", () => {
 
     test("Role list load performance", async ({ page }) => {
       const start = Date.now();
-      const role = new RoleListPage(page);
+      const role = new UserListPage(page);
       await role.goto();
       const end = Date.now();
 
@@ -119,7 +120,7 @@ test.describe("ROLE LIST (AUTHENTICATED)", () => {
     });
 
     test("Sort Role Code ASC", async ({ page }) => {
-      const role = new RoleListPage(page);
+      const role = new UserListPage(page);
       const columnsHasSort = role.tableColumnsHasSort;
       for (let i = 0; i < (await columnsHasSort.count()); i++) {
         await role.clickSortByColumn(i);
@@ -128,7 +129,7 @@ test.describe("ROLE LIST (AUTHENTICATED)", () => {
     });
 
     test("Sort Role Code DESC", async ({ page }) => {
-      const role = new RoleListPage(page);
+      const role = new UserListPage(page);
       const columnsHasSort = role.tableColumnsHasSort;
       for (let i = 0; i < (await columnsHasSort.count()); i++) {
         await role.clickSortByColumn(i);
@@ -140,65 +141,117 @@ test.describe("ROLE LIST (AUTHENTICATED)", () => {
 
   test.describe("ROLE CREATE", () => {
     test.beforeEach(async ({ page }) => {
-      const role = new RoleListPage(page);
+      const role = new UserListPage(page);
       await role.gotoCreate();
     });
 
-    test("limit code text length", async ({ page }) => {
-      const role = new RoleListPage(page);
-      await Helper.verifyTextLength(role.roleCodeField, 50);
+    test("limit UPI text length", async ({ page }) => {
+      const role = new UserListPage(page);
+      await Helper.verifyTextLength(role.userUpiField, 50);
     });
 
-    test("Reject Vietnamese, space characters in code field", async ({ page }) => {
-      const role = new RoleListPage(page);
-      await Helper.verifyInputText(role.roleCodeField, role.errorMsg , "Vui lòng nhập đúng định dạng yêu cầu", { vietnamese: true, space: true });
+    test("Reject Vietnamese, space, special characters in UPI field", async ({ page }) => {
+      const role = new UserListPage(page);
+      await Helper.verifyInputText(role.userUpiField, role.errorMsg , "Vui lòng nhập đúng định dạng yêu cầu", { vietnamese: true, space: true, special: true });
     });
 
     test("limit name text length", async ({ page }) => {
-      const role = new RoleListPage(page);
-      await Helper.verifyTextLength(role.roleNameField, 255);
+      const role = new UserListPage(page);
+      await Helper.verifyTextLength(role.userNameField, 255);
     });
 
     test("Accept all characters in name field", async ({ page }) => {
-      const role = new RoleListPage(page);
-      await Helper.verifyInputText(role.roleNameField, role.errorMsg , "");
+      const role = new UserListPage(page);
+      await Helper.verifyInputText(role.userNameField, role.errorMsg , "");
+    });
+
+    test("limit email text length", async ({ page }) => {
+      const role = new UserListPage(page);
+      await Helper.verifyTextLength(role.userEmailField, 255);
+    });
+
+    test("Reject invalid email format", async ({ page }) => {
+      const role = new UserListPage(page);
+      await Helper.verifyInputEmail(role.userEmailField, role.errorMsg , "Vui lòng nhập địa chỉ email hợp lệ");
     });
 
     test("Check not fill any field", async ({ page }) => {
-      const role = new RoleListPage(page);
-      await role.inputFields("", "");
+      const role = new UserListPage(page);
+      await role.inputFields("", "", "", "");
       await role.saveButton.click();
       const errmsg = role.errorMsg;
-      await expect(errmsg).toHaveCount(2);
+      await expect(errmsg).toHaveCount(4);
       for (let i = 0; i < (await errmsg.count()); i++) {
         await expect(errmsg.nth(i)).toHaveText(errorMsg);
       }
+    });
+
+    test("Check not fill UPI", async ({ page }) => {
+      const validUserUPI = await Helper.randomText(10, { vietnamese: false, space: false, special: false }); // Example valid role name
+      const newUser = {
+        upi: '',
+        name: `Test ${validUserUPI}`,
+        email: `${validUserUPI}@fractal.vn`,
+        role: 'Admin',
+      }
+      const role = new UserListPage(page);
+      await role.inputFields(newUser.upi, newUser.name, newUser.email, newUser.role);
+      await role.saveButton.click();
+      const errmsg = role.errorMsg;
+      await expect(errmsg).toHaveCount(1);
+      await expect(errmsg).toHaveText(errorMsg);
     });
 
     test("Check not fill name", async ({ page }) => {
-      const role = new RoleListPage(page);
-      await role.inputFields(validRoleID, "");
+      const validUserUPI = await Helper.randomText(10, { vietnamese: false, space: false, special: false }); // Example valid role name
+      const newUser = {
+        upi: `${validUserUPI}`,
+        name: ``,
+        email: `${validUserUPI}@fractal.vn`,
+        role: 'Admin',
+      }
+      const role = new UserListPage(page);
+      await role.inputFields(newUser.upi, newUser.name, newUser.email, newUser.role);
       await role.saveButton.click();
       const errmsg = role.errorMsg;
       await expect(errmsg).toHaveCount(1);
-      for (let i = 0; i < (await errmsg.count()); i++) {
-        await expect(errmsg.nth(i)).toHaveText(errorMsg);
-      }
+      await expect(errmsg).toHaveText(errorMsg);
     });
 
-    test("Check not fill role ID", async ({ page }) => {
-      const role = new RoleListPage(page);
-      await role.inputFields("", validRoleName);
+    test("Check not fill email", async ({ page }) => {
+      const validUserUPI = await Helper.randomText(10, { vietnamese: false, space: false, special: false }); // Example valid role name
+      const newUser = {
+        upi: `${validUserUPI}`,
+        name: `Test ${validUserUPI}`,
+        email: ``,
+        role: 'Admin',
+      }
+      const role = new UserListPage(page);
+      await role.inputFields(newUser.upi, newUser.name, newUser.email, newUser.role);
       await role.saveButton.click();
       const errmsg = role.errorMsg;
       await expect(errmsg).toHaveCount(1);
-      for (let i = 0; i < (await errmsg.count()); i++) {
-        await expect(errmsg.nth(i)).toHaveText(errorMsg);
+      await expect(errmsg).toHaveText(errorMsg);
+    });
+
+    test("Check not fill role", async ({ page }) => {
+      const validUserUPI = await Helper.randomText(10, { vietnamese: false, space: false, special: false }); // Example valid role name
+      const newUser = {
+        upi: `${validUserUPI}`,
+        name: `Test ${validUserUPI}`,
+        email: `${validUserUPI}@fractal.vn`,
+        role: '',
       }
+      const role = new UserListPage(page);
+      await role.inputFields(newUser.upi, newUser.name, newUser.email, newUser.role);
+      await role.saveButton.click();
+      const errmsg = role.errorMsg;
+      await expect(errmsg).toHaveCount(1);
+      await expect(errmsg).toHaveText(errorMsg);
     });
 
     // test('Check create a news', async ({ page }) => {
-    //   const role = new RoleListPage(page);
+    //   const role = new UserListPage(page);
     //   for (let i = 0; i < 1; i++) {
     //     const id = `${Date.now()}`;
     //     const name = 'Test ' + id;

@@ -1,7 +1,16 @@
 import { expect, Locator, Page } from "@playwright/test";
 import { RoleListPage } from "./role-list.page";
+import { error } from "node:console";
 
 type RandomTextOptions = {
+  alphabet?: boolean;
+  number?: boolean;
+  special?: boolean;
+  space?: boolean;
+  vietnamese?: boolean;
+};
+
+type DenyTextOptions = {
   alphabet?: boolean;
   number?: boolean;
   special?: boolean;
@@ -116,7 +125,7 @@ export class Helper {
     return result.join("");
   }
 
-  static async verifyInputText(inputLocator: Locator, errorMsg: Locator, expectedText: string, options: RandomTextOptions = {}) {
+  static async verifyInputText(inputLocator: Locator, errorMsg: Locator, expectedText: string, options: DenyTextOptions = {}) {
     const defaultOptions = {
       alphabet: false,
       number: false,
@@ -134,13 +143,42 @@ export class Helper {
         space: false,
         vietnamese: false,
       };
-      if (finalOptions[key as keyof RandomTextOptions]) {
-        options[key as keyof RandomTextOptions] = true;
+      if (finalOptions[key as keyof DenyTextOptions]) {
+        options[key as keyof DenyTextOptions] = true;
         await inputLocator.fill("");
         await inputLocator.fill(await Helper.randomText(5, options));
         await expect(errorMsg).toBeVisible();
         await expect(errorMsg).toContainText(expectedText);
+      } else {
+        options[key as keyof DenyTextOptions] = true;
+        await inputLocator.fill("");
+        await inputLocator.fill(await Helper.randomText(5, options));
+        await expect(errorMsg).not.toBeVisible();
       }
     }
+  }
+
+  static async verifyInputEmail(inputLocator: Locator, errorMsg: Locator, expectedText: string) {
+    const page = inputLocator.page();
+    const invalidEmails = [
+      "plainaddress",
+      "plainaddress@",
+      "plainaddress@gmail",
+      "plainaddress @gmail",
+      "@missingusername.com",
+      "username@.com",
+      "username@com",
+      "username@domain..com",
+    ];
+
+    for (const email of invalidEmails) {
+      await inputLocator.fill(email);
+      await page.waitForTimeout(500);
+      await expect(errorMsg).toBeVisible();
+      await expect(errorMsg).toContainText(expectedText);
+    }
+    await inputLocator.fill('test@gmail.com');
+    await page.waitForTimeout(500);
+    await expect(errorMsg).not.toBeVisible();
   }
 }
