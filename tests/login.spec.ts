@@ -140,23 +140,6 @@ test.describe('LOGIN FUNCTIONAL', () => {
             await expect(login.errorMsg).toBeVisible();
             await expect(login.errorMsg).toHaveText('Tên đăng nhập hoặc mật khẩu không hợp lệ.');
         });
-
-        // Xác minh rằng người dùng sẽ bị giới hạn số lần đăng nhập thất bại
-        // và sẽ nhận được thông báo lỗi phù hợp sau một số lần cố gắng đăng nhập không thành công.
-        // test('Rate limit after multiple fail login', async ({ page }) => {
-        //     const login = new LoginPage(page);
-        //     await login.goto();
-
-        //     for (let i = 0; i < 6; i++) {
-        //         await login.login('wrong@test.com', 'wrong');
-        //     }
-
-        //     await expect(login.errorMsg).toContainText('Too many attempts');
-        // });
-
-        // Cần kiểm tra thêm nội dung thông báo lỗi để 
-        // đảm bảo rằng nó phản ánh chính xác vấn đề 
-        // với thông tin đăng nhập của người dùng.
     });
 
     test.describe('FORGOT PASSWORD', () => {

@@ -8,7 +8,8 @@ export const API = {
   baseApiUrl: process.env.BASE_API_URL!,
   myProfile: process.env.MY_PROFILE_API_URL!,
   roleList: process.env.ROLE_LIST_API_URL!,
-  userList: process.env.USER_LIST_API_URL!
+  userList: process.env.USER_LIST_API_URL!,
+  mrList: process.env.MR_LIST_API_URL!
 };
 
 export const ENV = {
@@ -124,4 +125,41 @@ export const NEWS_LIST_PAGE = {
   contentField: process.env.NEWS_LIST_CONTENT_FIELD_SELECTOR!,
   backButton: process.env.NEWS_LIST_BACK_BUTTON_SELECTOR!,
   saveButton: process.env.NEWS_LIST_SAVE_BUTTON_SELECTOR!
+};
+
+export const MR_LIST_PAGE = {
+  url: process.env.MR_LIST_URL!,
+  apiUrl: process.env.MR_LIST_API_URL!,
+  searchInput: process.env.MR_LIST_SEARCH_INPUT_SELECTOR!,
+  clearFilterButton: process.env.MR_LIST_CLEAR_FILTER_BUTTON_SELECTOR!,
+  tableRows: process.env.MR_LIST_TABLE_ROWS_SELECTOR!,
+  tableColumns: process.env.MR_LIST_TABLE_COLUMNS_SELECTOR!,
+  tableColumnsHasSort: process.env.NEWS_LIST_TABLE_COLUMNS_HAS_SORT_SELECTOR!,
+  rowActions: process.env.NEWS_LIST_ROW_ACTIONS_SELECTOR!,
+  nextPageButton: process.env.MR_LIST_NEXT_PAGE_BUTTON_SELECTOR!,
+  prevPageButton: process.env.MR_LIST_PREV_PAGE_BUTTON_SELECTOR!,
+  pageSizeDropdown: process.env.MR_LIST_PAGE_SIZE_DROPDOWN_SELECTOR!,
+  pageSizeOption: process.env.MR_LIST_PAGE_SIZE_OPTION_SELECTOR!,
+};
+
+export const CATEGORY_LIST_PAGE = {
+  url: process.env.CATEGORY_LIST_URL!,
+  apiUrl: process.env.CATEGORY_LIST_API_URL!,
+  searchInput: process.env.CATEGORY_LIST_SEARCH_INPUT_SELECTOR!,
+  clearFilterButton: process.env.CATEGORY_LIST_CLEAR_FILTER_BUTTON_SELECTOR!,
+  createBtn: process.env.CATEGORY_LIST_CREATE_BUTTON_SELECTOR!,
+  tableRows: process.env.CATEGORY_LIST_TABLE_ROWS_SELECTOR!,
+  tableColumns: process.env.CATEGORY_LIST_TABLE_COLUMNS_SELECTOR!,
+  tableColumnsHasSort: process.env.CATEGORY_LIST_TABLE_COLUMNS_HAS_SORT_SELECTOR!,
+  editIcons: process.env.CATEGORY_LIST_EDIT_ICONS_SELECTOR!,
+  nextPageButton: process.env.CATEGORY_LIST_NEXT_PAGE_BUTTON_SELECTOR!,
+  prevPageButton: process.env.CATEGORY_LIST_PREV_PAGE_BUTTON_SELECTOR!,
+  pageSizeDropdown: process.env.CATEGORY_LIST_PAGE_SIZE_DROPDOWN_SELECTOR!,
+  pageSizeOption: process.env.CATEGORY_LIST_PAGE_SIZE_OPTION_SELECTOR!,
+  categoryNameField: process.env.CATEGORY_LIST_CATEGORY_NAME_FIELD_SELECTOR!,
+  categoryCodeField: process.env.CATEGORY_LIST_CATEGORY_CODE_FIELD_SELECTOR!,
+  statusToggle: process.env.CATEGORY_LIST_STATUS_TOGGLE_SELECTOR!,
+  errorMsg: process.env.CATEGORY_LIST_ERROR_MSG_SELECTOR!,
+  backButton: process.env.CATEGORY_LIST_BACK_BUTTON_SELECTOR!,
+  saveButton: process.env.CATEGORY_LIST_SAVE_BUTTON_SELECTOR!
 };

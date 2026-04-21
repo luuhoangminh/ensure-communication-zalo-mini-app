@@ -75,6 +75,22 @@ export default defineConfig({
       dependencies: ['setup']
     },
     {
+      name: 'mr-list-tests',
+      testMatch: /mr-list.spec.ts/,
+      use: {
+        storageState: 'storage/auth.json'
+      },
+      dependencies: ['setup']
+    },
+    {
+      name: 'category-list-tests',
+      testMatch: /category-list.spec.ts/,
+      use: {
+        storageState: 'storage/auth.json'
+      },
+      dependencies: ['setup']
+    },
+    {
       name: 'role-create-tests',
       testMatch: /role-create.spec.ts/,
       use: {

@@ -89,6 +89,7 @@ export class RoleListPage extends BasePage {
             await this.roleNameField.fill(roleName);
         }
         if (roleCode !== '') {
+            await this.roleCodeField.clear();
             await this.roleCodeField.fill(roleCode);
         }
     }
