@@ -1,5 +1,6 @@
 import { Page, Locator, expect, request } from "@playwright/test";
 import { API } from "../config/env";
+import { ApiPage } from "./api.page";
 
 export class BasePage {
     constructor(protected page: Page) {}
@@ -42,7 +43,7 @@ export class BasePage {
         });
     }
 
-    async getResponseData(urlPart: string) {
+    async getResponseData(urlPart: string, itemCount?: number) {
         const accessToken = await this.getAccessToken();
         const apiContext = await request.newContext({
             baseURL: API.baseApiUrl,
@@ -50,7 +51,7 @@ export class BasePage {
                 Authorization: `Bearer ${accessToken}`,
             },
         });
-        const response = await apiContext.get(urlPart);
+        const response = await apiContext.get(ApiPage.getApiUrl(urlPart, itemCount));
 
         return response.json();
     }

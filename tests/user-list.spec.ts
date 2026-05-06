@@ -100,11 +100,9 @@ test.describe("USER LIST (AUTHENTICATED)", () => {
       const options = user.pageSizeOption;
       const optionCount = await options.count();
       for (let i = 0; i < optionCount; i++) {
-        await options.nth(i).click();
-        await user.waitForData();
-        await expect(
-          user.pageSizeDropdown.getByText(await options.nth(i).textContent()),
-        ).toBeVisible();
+        const optionText = (await options.nth(i).textContent())?.trim() ?? "";
+        await user.changePageSizeByIndex(i);
+        await expect(user.pageSizeDropdown).toContainText(optionText);
         await user.pageSizeDropdown.click();
       }
     });
@@ -135,6 +133,42 @@ test.describe("USER LIST (AUTHENTICATED)", () => {
         await user.clickSortByColumn(i);
         await Helper.verifyColumnSortedDesc(page, i);
       }
+    });
+
+    test('Check can not create user with existing UPI', async ({ page }) => {
+      const user = new UserListPage(page);
+      const validUserUPI = await Helper.randomText(10, { vietnamese: false, space: false, special: false });
+      const firstUserUpi = await user.tableRows.first().locator('td').nth(1).textContent() ?? '';
+      await user.createBtn.click();
+      const arrRole = await user.getRoleOptions();
+      const newUser = {
+        upi: firstUserUpi.trim(),
+        name: `Test ${validUserUPI}`,
+        email: `${validUserUPI}@fractal.vn`,
+        user: arrRole[Math.floor(Math.random() * arrRole.length)],
+      }
+      await user.inputFields(newUser.upi, newUser.name, newUser.email, newUser.user);
+      await user.saveButton.click();
+      const errmsg = 'UPI đã được sử dụng!';
+      await expect(await page.locator('text=' + errmsg)).toBeVisible();
+    });
+
+    test('Check can not create user with existing email (upper case)', async ({ page }) => {
+      const user = new UserListPage(page);
+      const validUserUPI = await Helper.randomText(10, { vietnamese: false, space: false, special: false });
+      const firstUserUpi = await user.tableRows.first().locator('td').nth(2).textContent() ?? '';
+      await user.createBtn.click();
+      const arrRole = await user.getRoleOptions();
+      const newUser = {
+        upi: `${Date.now()}`,
+        name: `Test ${validUserUPI}`,
+        email: firstUserUpi.trim().toUpperCase(),
+        user: arrRole[Math.floor(Math.random() * arrRole.length)],
+      }
+      await user.inputFields(newUser.upi, newUser.name, newUser.email, newUser.user);
+      await user.saveButton.click();
+      const errmsg = 'Email đã được sử dụng!';
+      await expect(await page.locator('text=' + errmsg)).toBeVisible();
     });
   });
 
@@ -233,7 +267,7 @@ test.describe("USER LIST (AUTHENTICATED)", () => {
       await expect(errmsg).toHaveText(errorMsg);
     });
 
-    test("Check not fill user", async ({ page }) => {
+    test("Check not fill user role", async ({ page }) => {
       const validUserUPI = await Helper.randomText(10, { vietnamese: false, space: false, special: false }); // Example valid user name
       const newUser = {
         upi: `${validUserUPI}`,

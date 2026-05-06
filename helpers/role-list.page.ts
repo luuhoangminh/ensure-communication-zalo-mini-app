@@ -84,6 +84,15 @@ export class RoleListPage extends BasePage {
         await this.waitForData(ROLE_LIST_PAGE.apiUrl);
     }
 
+    async changePageSizeByIndex(index: number) {
+        await this.pageSizeDropdown.scrollIntoViewIfNeeded();
+        if (!(await this.pageSizeDropdown.isVisible())) {
+            await this.pageSizeDropdown.click();
+        }
+        await this.pageSizeOption.nth(index).click();
+        await this.waitForData();
+    }
+
     async inputFields(roleCode: string, roleName: string) {
         if (roleName !== '') {
             await this.roleNameField.fill(roleName);

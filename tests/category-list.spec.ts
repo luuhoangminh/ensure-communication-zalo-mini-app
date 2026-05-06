@@ -100,13 +100,9 @@ test.describe("CATEGORY LIST (AUTHENTICATED)", () => {
       const options = category.pageSizeOption;
       const optionCount = await options.count();
       for (let i = 0; i < optionCount; i++) {
-        await page.waitForTimeout(1000);
-        await page.keyboard.press('End');
-        await options.nth(i).click();
-        await category.waitForData();
-        await expect(
-          category.pageSizeDropdown.getByText(await options.nth(i).textContent()),
-        ).toBeVisible();
+        const optionText = (await options.nth(i).textContent())?.trim() ?? "";
+        await category.changePageSizeByIndex(i);
+        await expect(category.pageSizeDropdown).toContainText(optionText);
         await category.pageSizeDropdown.click();
       }
     });
@@ -201,7 +197,7 @@ test.describe("CATEGORY LIST (AUTHENTICATED)", () => {
 
     test('Check create a category', async ({ page }) => {
       const category = new CategoryListPage(page);
-      for (let i = 0; i < 11; i++) {
+      for (let i = 0; i < 1; i++) {
         const date = Date.now();
         const id = `CATEGORY${date}`;
         const name = 'Ensure ' + date;

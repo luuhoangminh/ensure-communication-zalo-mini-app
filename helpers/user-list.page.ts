@@ -115,4 +115,13 @@ export class UserListPage extends BasePage {
         const roleOptions = await this.getResponseData(USER_LIST_PAGE.roleListApiUrl);
         return roleOptions.map((option: { name: string }) => option.name);
     }
+
+    async changePageSizeByIndex(index: number) {
+        await this.pageSizeDropdown.scrollIntoViewIfNeeded();
+        if (!(await this.pageSizeDropdown.isVisible())) {
+            await this.pageSizeDropdown.click();
+        }
+        await this.pageSizeOption.nth(index).click();
+        await this.waitForData();
+    }
 }

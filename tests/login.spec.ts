@@ -112,6 +112,18 @@ test.describe('LOGIN FUNCTIONAL', () => {
             await login.loginBtn.click();
 
             await expect(login.errorMsg).toBeVisible();
+            await expect(login.errorMsg).toContainText('Tên đăng nhập hoặc mật khẩu không hợp lệ.');
+        });
+
+        test('Login with full limit character', async ({ page }) => {
+            const login = new LoginPage(page);
+            await login.goto();
+
+            await login.email.fill(await Helper.randomText(244,{space: false}) + '@fractal.vn');
+            await login.password.fill(await Helper.randomText(255,{space: false}));
+            await login.loginBtn.click();
+
+            await expect(login.errorMsg).toBeVisible();
             await expect(login.errorMsg).toHaveText('Tên đăng nhập hoặc mật khẩu không hợp lệ.');
         });
 

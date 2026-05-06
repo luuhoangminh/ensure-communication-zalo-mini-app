@@ -4,35 +4,32 @@ import { BasePage } from './base.page';
 
 export class NewsListPage extends BasePage {
     readonly searchInput: Locator;
-    readonly roleTypeDropdown: Locator;
-    readonly filterBtn: Locator;
     readonly clearFilterBtn: Locator;
     readonly createBtn: Locator;
     readonly tableRows: Locator;
     readonly tableColumns: Locator;
     readonly tableColumnsHasSort: Locator;
     readonly rowActions: Locator;
-    readonly firstPageBtn: Locator;
-    readonly prevPageBtn: Locator;
-    readonly pageActive: Locator;
     readonly nextPageBtn: Locator;
+    readonly prevPageBtn: Locator;
     readonly lastPageBtn: Locator;
     readonly pageSizeDropdown: Locator;
+    readonly pageSizeOption: Locator;
+    readonly bannerField: Locator;
+    readonly radioGroup: Locator;
     readonly titleField: Locator;
-    readonly seoTitleField: Locator;
-    readonly slugField: Locator;
-    readonly shortDescriptionField: Locator;
+    readonly publicationTimeField: Locator;
+    readonly categoryDropdown: Locator;
+    readonly categoryOption: Locator;
+    readonly hiddenTimeField: Locator;
     readonly contentField: Locator;
     readonly backButton: Locator;
     readonly saveButton: Locator;
-
     constructor(page: Page) {
         super(page);
         this.page = page;
 
         this.searchInput = page.locator(NEWS_LIST_PAGE.searchInput);
-        this.roleTypeDropdown = page.locator(NEWS_LIST_PAGE.roleTypeDropdown);
-        this.filterBtn = page.locator(NEWS_LIST_PAGE.filterButton);
         this.clearFilterBtn = page.locator(NEWS_LIST_PAGE.clearFilterButton);
         this.createBtn = page.locator(NEWS_LIST_PAGE.createBtn);
 
@@ -41,31 +38,21 @@ export class NewsListPage extends BasePage {
         this.tableColumnsHasSort = page.locator(NEWS_LIST_PAGE.tableColumnsHasSort);
         this.rowActions = page.locator(NEWS_LIST_PAGE.rowActions);
 
-        this.firstPageBtn = page.locator(NEWS_LIST_PAGE.firstPageButton);
-        this.prevPageBtn = page.locator(NEWS_LIST_PAGE.prevPageButton);
-        this.pageActive = page.locator(NEWS_LIST_PAGE.pageActive);
         this.nextPageBtn = page.locator(NEWS_LIST_PAGE.nextPageButton);
-        this.lastPageBtn = page.locator(NEWS_LIST_PAGE.lastPageButton);
+        this.prevPageBtn = page.locator(NEWS_LIST_PAGE.prevPageButton);
         this.pageSizeDropdown = page.locator(NEWS_LIST_PAGE.pageSizeDropdown);
+        this.pageSizeOption = page.locator(NEWS_LIST_PAGE.pageSizeOption);
 
+        this.bannerField = page.locator(NEWS_LIST_PAGE.bannerField);
+        this.radioGroup = page.locator(NEWS_LIST_PAGE.radioGroup);
         this.titleField = page.locator(NEWS_LIST_PAGE.titleField);
-        this.seoTitleField = page.locator(NEWS_LIST_PAGE.seoTitleField);
-        this.slugField = page.locator(NEWS_LIST_PAGE.slugField);
-        this.shortDescriptionField = page.locator(NEWS_LIST_PAGE.shortDescriptionField);
+        this.publicationTimeField = page.locator(NEWS_LIST_PAGE.publicationTimeField);
+        this.categoryDropdown = page.locator(NEWS_LIST_PAGE.categoryDropdown);
+        this.categoryOption = page.locator(NEWS_LIST_PAGE.categoryOption);
+        this.hiddenTimeField = page.locator(NEWS_LIST_PAGE.hiddenTimeField);
         this.contentField = page.locator(NEWS_LIST_PAGE.contentField);
         this.backButton = page.locator(NEWS_LIST_PAGE.backButton);
         this.saveButton = page.locator(NEWS_LIST_PAGE.saveButton);
-    }
-
-    async waitForTableData(urlPart: string = '') {
-        if (urlPart === '') {
-            await this.page.waitForLoadState('networkidle');
-        } else {
-            await this.page.waitForResponse(res =>
-                res.url().includes(urlPart) &&
-                res.status() === 200
-            );
-        }
     }
 
     async goto() {
@@ -78,61 +65,59 @@ export class NewsListPage extends BasePage {
         await this.waitForData();
     }
 
+    // Helper method to check placeholder text of a locator
+    // This method only used for search input
+    async checkPlaceholderText(locator: Locator, text: string) {
+        await expect(locator).toHaveAttribute('placeholder', text);
+    }
+
     async search(keyword: string) {
         await super.searchByKeyword(this.searchInput, keyword, NEWS_LIST_PAGE.apiUrl);
     }
 
-    async filterStatus(type: string) {
-        await this.roleTypeDropdown.click();
-        await this.roleTypeDropdown.selectOption({ label: type });
-        await this.filterBtn.click();
-        await this.waitForTableData(NEWS_LIST_PAGE.apiUrl);
-    }
-
     async clearFilter() {
         await this.clearFilterBtn.click();
-        await this.roleTypeDropdown.click();
-        await this.roleTypeDropdown.selectOption({ label: 'Status — All' });
-        await this.filterBtn.click();
-        await this.waitForTableData(NEWS_LIST_PAGE.apiUrl);
     }
 
     async clickEditFirst() {
-        if (await this.rowActions.count() > 1) {
-            await this.rowActions.nth(1).click();
-        } else {
-            await this.rowActions.click();
-        }
-        await expect(this.page.locator('.dropdown-menu.show')).toBeVisible();
-        await this.page.locator('.dropdown-menu.show').getByText('edit').click();
+        await this.rowActions.nth(0).click();
     }
 
     async clickSortByColumn(columnIndex: number) {
         await Promise.all([
-            this.waitForTableData(NEWS_LIST_PAGE.apiUrl),
+            this.waitForData(NEWS_LIST_PAGE.apiUrl),
             this.tableColumnsHasSort.nth(columnIndex).click()
         ]);
     }
-
-    async createNews(news: { title: string, seoTitle: string, slug: string, shortDescription: string, content: string }) {
-        const { title, seoTitle, slug, shortDescription, content } = news;
+    
+    async inputFields(imageURL: string, statusLabel: string, title: string, publicationTime: string, category: string, hiddenTime: string, type: string, content: string) {
+        if (imageURL !== '') {
+            await this.bannerField.setInputFiles(imageURL);
+        }
+        if (statusLabel !== '') {
+            await this.radioGroup.getByLabel(statusLabel).click();
+        }
         if (title !== '') {
             await this.titleField.fill(title);
         }
-        if (seoTitle !== '') {
-            await this.seoTitleField.fill(seoTitle);
+        if (publicationTime !== '') {
+            await this.publicationTimeField.fill(publicationTime);
         }
-        if (slug !== '') {
-            await this.slugField.fill(slug);
+        if (category !== '') {
+            await this.categoryDropdown.click();
+            await this.categoryDropdown.fill(category);
+            await this.waitForData();
+            await this.page.locator(NEWS_LIST_PAGE.categoryOption + `[title="${category}"]`).click();
         }
-        if (shortDescription !== '') {
-            await this.shortDescriptionField.fill(shortDescription);
+        if (hiddenTime !== '') {
+            await this.hiddenTimeField.fill(hiddenTime);
+        }
+        if (type !== '') {
+            await this.radioGroup.getByLabel(type).click();
         }
         if (content !== '') {
             await this.contentField.click();
             await this.contentField.fill(content);
         }
-        await this.saveButton.click();
-        await this.waitForTableData();
     }
 }

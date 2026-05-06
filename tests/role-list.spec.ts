@@ -100,11 +100,9 @@ test.describe("ROLE LIST (AUTHENTICATED)", () => {
       const options = role.pageSizeOption;
       const optionCount = await options.count();
       for (let i = 0; i < optionCount; i++) {
-        await options.nth(i).click();
-        await role.waitForData();
-        await expect(
-          role.pageSizeDropdown.getByText(await options.nth(i).textContent()),
-        ).toBeVisible();
+        const optionText = (await options.nth(i).textContent())?.trim() ?? "";
+        await role.changePageSizeByIndex(i);
+        await expect(role.pageSizeDropdown).toContainText(optionText);
         await role.pageSizeDropdown.click();
       }
     });
