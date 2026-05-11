@@ -1,5 +1,6 @@
 import { expect, Locator, Page } from "@playwright/test";
 import { RoleListPage } from "./role-list.page";
+import fs from 'fs';
 import { error } from "node:console";
 
 type RandomTextOptions = {
@@ -16,6 +17,11 @@ type DenyTextOptions = {
   special?: boolean;
   space?: boolean;
   vietnamese?: boolean;
+};
+
+type CompareItem = {
+    id: number;
+    name: string;
 };
 
 export class Helper {
@@ -180,5 +186,90 @@ export class Helper {
     await inputLocator.fill('test@gmail.com');
     await page.waitForTimeout(500);
     await expect(errorMsg).not.toBeVisible();
+  }
+
+  static async verifyArrayByIdAndName(
+    actual: { id: number; name: string }[],
+    expected: { id: number; name: string }[]
+  ) {
+      // verify length
+      expect(
+          actual.length,
+          `Different array length:
+            actual=${actual.length}
+            expected=${expected.length}`
+      ).toBe(expected.length);
+
+      const expectedMap = new Map(
+          expected.map((item) => [item.id, item.name])
+      );
+
+      const differences: string[] = [];
+
+      for (const actualItem of actual) {
+          const expectedName = expectedMap.get(actualItem.id);
+
+          // missing id
+          if (expectedName === undefined) {
+              differences.push(
+                  `Missing id=${actualItem.id} in expected array`
+              );
+              continue;
+          }
+
+          // different name
+          if (actualItem.name !== expectedName) {
+              differences.push(
+                  `Different name at id=${actualItem.id}
+                  actual="${actualItem.name}"
+                  expected="${expectedName}"`
+              );
+          }
+      }
+
+      expect(
+          differences,
+          differences.join("\n")
+      ).toEqual([]);
+  }
+
+  static async getAndIncrementCounter(filePath: string) {
+    // đọc file
+    const fileContent = fs.readFileSync(filePath, 'utf-8');
+
+    // parse csv
+    const lines = fileContent.trim().split('\n');
+
+    // lấy số hiện tại
+    const currentNumber = Number(lines[0]);
+
+    // tăng +1
+    const newNumber = currentNumber + 1;
+
+    // update lại csv
+    const updatedContent =
+    `${newNumber}`;
+
+    fs.writeFileSync(filePath, updatedContent);
+
+    // return số mới
+    return newNumber;
+  }
+
+  static async getCurrentDateTime(daysToAdd: number = 0) {
+    const now = new Date();
+
+    // cộng thêm ngày
+    now.setDate(now.getDate() + daysToAdd);
+
+    const hour = String(now.getHours()).padStart(2, '0');
+    const minute = String(now.getMinutes()).padStart(2, '0');
+    const second = String(now.getSeconds()).padStart(2, '0');
+
+    const day = String(now.getDate()).padStart(2, '0');
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const year = now.getFullYear();
+
+    return `${hour}:${minute}:${second} ${day}/${month}/${year}`;
   }
 }

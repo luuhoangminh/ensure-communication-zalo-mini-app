@@ -1,5 +1,6 @@
 {
   // Visit https://aka.ms/tsconfig to read more about this file
+  "parser": "@typescript-eslint/parser",
   "compilerOptions": {
     // File Layout
     // "rootDir": "./src",

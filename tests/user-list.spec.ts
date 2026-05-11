@@ -140,7 +140,7 @@ test.describe("USER LIST (AUTHENTICATED)", () => {
       const validUserUPI = await Helper.randomText(10, { vietnamese: false, space: false, special: false });
       const firstUserUpi = await user.tableRows.first().locator('td').nth(1).textContent() ?? '';
       await user.createBtn.click();
-      const arrRole = await user.getRoleOptions();
+      const arrRole = await user.getRoleOptions().then(options => options.map(option => option.name));
       const newUser = {
         upi: firstUserUpi.trim(),
         name: `Test ${validUserUPI}`,
@@ -158,7 +158,7 @@ test.describe("USER LIST (AUTHENTICATED)", () => {
       const validUserUPI = await Helper.randomText(10, { vietnamese: false, space: false, special: false });
       const firstUserUpi = await user.tableRows.first().locator('td').nth(2).textContent() ?? '';
       await user.createBtn.click();
-      const arrRole = await user.getRoleOptions();
+      const arrRole = await user.getRoleOptions().then(options => options.map(option => option.name));
       const newUser = {
         upi: `${Date.now()}`,
         name: `Test ${validUserUPI}`,
@@ -283,13 +283,33 @@ test.describe("USER LIST (AUTHENTICATED)", () => {
       await expect(errmsg).toHaveText(errorMsg);
     });
 
+    test("Check list role", async ({ page }) => {
+      const user = new UserListPage(page);
+      type Role = {
+        id: number;
+        name: string;
+        status: boolean;
+      };
+      const response = await user.getResponseData(API.roleList, 99999);
+      const allRoles = response.data.map(
+        (item: Role) => ({
+            id: item.id,
+            name: item.name + (item.status ? "" : " (vô hiệu hóa)")
+        })
+      );
+      const roleOptions = await user.getRoleOptions();
+
+      Helper.verifyArrayByIdAndName(allRoles, roleOptions);
+    });
+
     test('Check create a news', async ({ page }) => {
       const user = new UserListPage(page);
-      const arrRole = await user.getRoleOptions();
+      const arrRole = await user.getRoleOptions().then(options => options.map(option => option.name));
       for (let i = 0; i < 1; i++) {
-        const id = `${Date.now()}`;
-        const name = 'Test ' + id;
-        const email = 'email' + id + '@fractal.vn';
+        const increment = (await Helper.getAndIncrementCounter('data/user-id.csv')).toString();
+        const id = 'user' + increment;
+        const name = 'Người dùng ' + increment;
+        const email = 'email' + increment + '@fractal.vn';
         const role = arrRole[Math.floor(Math.random() * arrRole.length)];
         const status = Boolean(Math.random() < 0.5)
         await user.inputFields(id, name, email, role, status);

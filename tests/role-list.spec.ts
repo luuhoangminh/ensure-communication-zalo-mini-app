@@ -198,8 +198,9 @@ test.describe("ROLE LIST (AUTHENTICATED)", () => {
     test('Check create a role', async ({ page }) => {
       const role = new RoleListPage(page);
       for (let i = 0; i < 1; i++) {
-        const id = `${Date.now()}`;
-        const name = 'Test ' + id;
+        const increment = (await Helper.getAndIncrementCounter('data/role-id.csv')).toString();
+        const id = 'role' + increment;
+        const name = 'Vai trò ' + increment;
         await role.inputFields(id, name);
         await role.saveButton.click();
         await role.waitForData();

@@ -9,7 +9,8 @@ export const API = {
   myProfile: process.env.MY_PROFILE_API_URL!,
   roleList: process.env.ROLE_LIST_API_URL!,
   userList: process.env.USER_LIST_API_URL!,
-  mrList: process.env.MR_LIST_API_URL!
+  mrList: process.env.MR_LIST_API_URL!,
+  categoryList: process.env.CATEGORY_LIST_API_URL!,
 };
 
 export const ENV = {
@@ -102,6 +103,7 @@ export const USER_LIST_PAGE = {
 export const NEWS_LIST_PAGE = {
   url: process.env.NEWS_LIST_URL!,
   apiUrl: process.env.NEWS_LIST_API_URL!,
+  categoryListApiUrl: process.env.NEWS_LIST_CATEGORY_LIST_API_URL!,
   createOrEditUrl: process.env.NEWS_LIST_CREATE_OR_EDIT_URL!,
   searchInput: process.env.NEWS_LIST_SEARCH_INPUT_SELECTOR!,
   clearFilterButton: process.env.NEWS_LIST_CLEAR_FILTER_BUTTON_SELECTOR!,
@@ -122,6 +124,7 @@ export const NEWS_LIST_PAGE = {
   categoryOption: process.env.NEWS_LIST_CATEGORY_OPTION_SELECTOR!,
   hiddenTimeField: process.env.NEWS_LIST_HIDDEN_TIME_FIELD_SELECTOR!,
   contentField: process.env.NEWS_LIST_CONTENT_FIELD_SELECTOR!,
+  errorMsg: process.env.NEWS_LIST_ERROR_MSG_SELECTOR!,
   backButton: process.env.NEWS_LIST_BACK_BUTTON_SELECTOR!,
   saveButton: process.env.NEWS_LIST_SAVE_BUTTON_SELECTOR!
 };

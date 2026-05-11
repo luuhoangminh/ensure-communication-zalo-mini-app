@@ -198,9 +198,8 @@ test.describe("CATEGORY LIST (AUTHENTICATED)", () => {
     test('Check create a category', async ({ page }) => {
       const category = new CategoryListPage(page);
       for (let i = 0; i < 1; i++) {
-        const date = Date.now();
-        const id = `CATEGORY${date}`;
-        const name = 'Ensure ' + date;
+        const id = (await Helper.getAndIncrementCounter('data/category-id.csv')).toString();
+        const name = 'Danh mục ' + id;
         const status = Boolean(Math.random() < 0.5)
         await category.inputFields(id, name, status);
         await category.saveButton.click();

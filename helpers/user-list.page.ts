@@ -113,7 +113,10 @@ export class UserListPage extends BasePage {
 
     async getRoleOptions() {
         const roleOptions = await this.getResponseData(USER_LIST_PAGE.roleListApiUrl);
-        return roleOptions.map((option: { name: string }) => option.name);
+        return roleOptions.map((option: { id: number; name: string }) => ({
+            id: option.id,
+            name: option.name
+        }));
     }
 
     async changePageSizeByIndex(index: number) {
