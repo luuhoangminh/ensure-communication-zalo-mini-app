@@ -31,20 +31,90 @@ export class Helper {
     return role.tableRows.locator(`td:nth-child(${index})`).allTextContents();
   }
 
-  static isSortedAsc(arr: string[]) {
-    return arr.every(
-      (v, i, a) =>
-        !i ||
-        v.localeCompare(a[i - 1], undefined, { sensitivity: "base" }) >= 0,
+  static parseDate(dateStr: string): Date {
+    const [day, month, year] =
+      dateStr.split('/').map(Number);
+
+    return new Date(year, month - 1, day);
+  }
+  
+  static parseDateTime(dateTimeStr: string): Date {
+    const [timePart, datePart] =
+      dateTimeStr.split(' ');
+
+    const [hour, minute, second] =
+      timePart.split(':').map(Number);
+
+    const [day, month, year] =
+      datePart.split('/').map(Number);
+
+    return new Date(
+      year,
+      month - 1,
+      day,
+      hour,
+      minute,
+      second
     );
   }
 
+  static compareValues(a: string, b: string): number {
+    const valA = a.trim();
+    const valB = b.trim();
+
+    // ===== DATE: DD/MM/YYYY =====
+    const dateRegex = /^\d{2}\/\d{2}\/\d{4}$/;
+
+    if (dateRegex.test(valA) && dateRegex.test(valB)) {
+      const dateA = this.parseDate(valA).getTime();
+      const dateB = this.parseDate(valB).getTime();
+
+      return dateA - dateB;
+    }
+
+    // ===== DATETIME: HH:mm:ss DD/MM/YYYY =====
+    const dateTimeRegex =
+      /^\d{2}:\d{2}:\d{2} \d{2}\/\d{2}\/\d{4}$/;
+
+    if (
+      dateTimeRegex.test(valA) &&
+      dateTimeRegex.test(valB)
+    ) {
+      const dateA = this.parseDateTime(valA).getTime();
+      const dateB = this.parseDateTime(valB).getTime();
+
+      return dateA - dateB;
+    }
+
+    // ===== NUMBER =====
+    if (!isNaN(Number(valA)) && !isNaN(Number(valB))) {
+      return Number(valA) - Number(valB);
+    }
+
+    // ===== DEFAULT STRING =====
+    return valA.localeCompare(valB, undefined, {
+      sensitivity: 'base',
+    });
+  }
+
+  static isSortedAsc(arr: string[]) {
+    return arr.every((v, i, a) => {
+      if (i === 0) return true;
+
+      return (
+        this.compareValues(a[i - 1], v) <= 0
+      );
+    });
+  }
+
   static isSortedDesc(arr: string[]) {
-    return arr.every(
-      (v, i, a) =>
-        !i ||
-        v.localeCompare(a[i - 1], undefined, { sensitivity: "base" }) <= 0,
-    );
+    return arr.every((v, i, a) => {
+      if (i === 0) return true;
+
+      return (
+        this.compareValues(a[i - 1], v) >= 0
+      );
+    });
   }
 
   static async verifyColumnSortedAsc(page: Page, columnIndex: number) {

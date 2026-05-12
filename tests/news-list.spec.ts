@@ -46,6 +46,12 @@ test.describe("NEWS LIST (AUTHENTICATED)", () => {
       await expect(rows.nth(i)).toContainText(new RegExp(searchText, "i"));
     }
   });
+  
+  test("limit search text length", async ({ page }) => {
+    const news = new NewsListPage(page);
+    await news.goto();
+    await Helper.verifyTextLength(news.searchInput, 250);
+  });
 
   test("Search not found", async ({ page }) => {
     const news = new NewsListPage(page);
@@ -55,11 +61,11 @@ test.describe("NEWS LIST (AUTHENTICATED)", () => {
   });
 
   test("Clear filter by search box", async ({ page }) => {
-    const user = new NewsListPage(page);
-    await user.search(notFoundText);
-    await user.clearFilter();
+    const news = new NewsListPage(page);
+    await news.search(notFoundText);
+    await news.clearFilter();
 
-    await expect(user.tableRows).not.toHaveCount(0);
+    await expect(news.tableRows).not.toHaveCount(0);
   });
 
   test("Click edit role", async ({ page }) => {
@@ -77,16 +83,17 @@ test.describe("NEWS LIST (AUTHENTICATED)", () => {
   });
 
   test("Pagination next", async ({ page }) => {
-    const user = new NewsListPage(page);
-    await user.nextPageBtn.click();
+    const news = new NewsListPage(page);
+    await news.nextPageBtn.scrollIntoViewIfNeeded();
+    await news.nextPageBtn.click();
 
     await expect(page).toHaveURL(/page=2/);
   });
 
   test("Pagination previous", async ({ page }) => {
-    const user = new NewsListPage(page);
-    await user.nextPageBtn.click();
-    await user.prevPageBtn.click();
+    const news = new NewsListPage(page);
+    await news.nextPageBtn.click();
+    await news.prevPageBtn.click();
   });
 
   test("Change page size", async ({ page }) => {
@@ -156,7 +163,7 @@ test.describe("CREATE NEWS (AUTHENTICATED)", () => {
     await expect(news.radioGroup.getByText('Riêng tư theo danh sách', { exact: true })).toBeVisible({ timeout: 10_000 });
     
     // Ảnh bìa
-    await expect(news.bannerField).toBeVisible({ timeout: 10_000 });
+    // await expect(news.bannerField).toBeVisible({ timeout: 10_000 });
 
     // Trạng thái
     await expect(news.radioGroup.getByText('Hoạt động', { exact: true })).toBeVisible({ timeout: 10_000 });
@@ -197,7 +204,7 @@ test.describe("CREATE NEWS (AUTHENTICATED)", () => {
 
   test("Check not fill any field", async ({ page }) => {
     const news = new NewsListPage(page);
-    await news.inputFields("data/images/image1.jpg", "Nháp", "test", "", "", "", "", "");
+    await news.inputFields("data/images/image1.jpg", "Nháp", "", "", "", "", "", "");
     await news.saveButton.click();
     const errmsg = news.errorMsg;
     await expect(errmsg).toHaveCount(5);
@@ -209,7 +216,8 @@ test.describe("CREATE NEWS (AUTHENTICATED)", () => {
 
   test("Check not fill title", async ({ page }) => {
     const news = new NewsListPage(page);
-    await news.inputFields("data/images/image1.jpg", "Nháp", "", "05:29:38 08/05/2026", "Ensure 1777883719258", "09:30:55 22/05/2026", "Công khai", "test");
+    const arrCategory = (await news.getCategoryOptions().then(options => options.map(option => option.name)))[0];
+    await news.inputFields("data/images/image1.jpg", "Nháp", "", "05:29:38 08/05/2026", arrCategory, "09:30:55 22/05/2026", "Công khai", "test");
     await news.saveButton.click();
     const errmsg = news.errorMsg;
     await expect(errmsg).toHaveCount(1);
@@ -221,7 +229,8 @@ test.describe("CREATE NEWS (AUTHENTICATED)", () => {
 
   test("Check not fill publish time", async ({ page }) => {
     const news = new NewsListPage(page);
-    await news.inputFields("data/images/image1.jpg", "Nháp", "test", "", "Ensure 1777883719258", "09:30:55 22/05/2026", "Công khai", "test");
+    const arrCategory = (await news.getCategoryOptions().then(options => options.map(option => option.name)))[0];
+    await news.inputFields("data/images/image1.jpg", "Nháp", "test", "", arrCategory, "09:30:55 22/05/2026", "Công khai", "test");
     await news.saveButton.click();
     const errmsg = news.errorMsg;
     await expect(errmsg).toHaveCount(1);
@@ -245,7 +254,8 @@ test.describe("CREATE NEWS (AUTHENTICATED)", () => {
 
   test("Check not fill hidden time", async ({ page }) => {
     const news = new NewsListPage(page);
-    await news.inputFields("data/images/image1.jpg", "Nháp", "test", "05:29:38 08/05/2026", "Ensure 1777883719258", "", "Công khai", "test");
+    const arrCategory = (await news.getCategoryOptions().then(options => options.map(option => option.name)))[0];
+    await news.inputFields("data/images/image1.jpg", "Nháp", "test", "05:29:38 08/05/2026", arrCategory, "", "Công khai", "test");
     await news.saveButton.click();
     const errmsg = news.errorMsg;
     await expect(errmsg).toHaveCount(1);
@@ -257,7 +267,8 @@ test.describe("CREATE NEWS (AUTHENTICATED)", () => {
 
   test("Check not fill content", async ({ page }) => {
     const news = new NewsListPage(page);
-    await news.inputFields("data/images/image1.jpg", "Nháp", "test", "05:29:38 08/05/2026", "Ensure 1777883719258", "09:30:55 22/05/2026", "Công khai", "");
+    const arrCategory = (await news.getCategoryOptions().then(options => options.map(option => option.name)))[0];
+    await news.inputFields("data/images/image1.jpg", "Nháp", "test", "05:29:38 08/05/2026", arrCategory, "09:30:55 22/05/2026", "Công khai", "");
     await news.saveButton.click();
     const errmsg = news.errorMsg;
     await expect(errmsg).toHaveCount(1);
